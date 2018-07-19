@@ -34,17 +34,17 @@ class Cart(CommonBaseData):
 			self.cart_id = str(DatetimeUtil.unixtime())+self.user_customer.display_name.replace(' ','_')
 		super(Cart, self).save(*args, **kwargs)
 
-	def get_products(self):
+	def getProducts(self):
 		return CartProducts.objects.filter(user_cart=self)
 
-	def add_product(self,product):
-		CartProducts.objects.create(user_cart=self,product_id=product['id'],product_quantity=product['quantity'],product_price=product['price'])
+	def addProduct(self,product):
+		CartProducts.objects.create(user_cart=self,product_id=product['id'],product_quantity=product['quantity'],product_price=product['price'],variant_id=product['variant_id'])
 		self.cart_price+=(float(product['price'])*int(product['quantity']))
 		self.item_count+=int(product['quantity'])
 		self.save()
 		return True
 
-	def remove_product(self,p_id):
+	def removeProduct(self,p_id):
 		try:
 			cart_item = CartProducts.objects.get(id=p_id)
 			self.cart_price-=(float(cart_item.product_price)*int(cart_item.product_quantity))
@@ -56,10 +56,10 @@ class Cart(CommonBaseData):
 			return False
 
 
-
 class CartProducts(CommonBaseData):
 	user_cart = models.ForeignKey(Cart, related_name='cart_products')
 	product_id = models.CharField(max_length=100)
+	variant_id = models.CharField(max_length=100)
 	product_quantity = models.IntegerField(default=1)
 	product_price = models.FloatField(default=0.00)
 	product_status = models.CharField(default='added', max_length=20)
@@ -79,4 +79,34 @@ class Orders(CommonBaseData):
 
 	class Meta:
 		db_table = 'mishipay_shopping_orders'
+
+	def setOrderMetaData(self):
+		for product in self.order_cart.getProducts():
+			order_meta_obj = CartOrderBaseData(customer_order=self)
+			order_meta_obj.product_id = product.product_id
+			order_meta_obj.variant_id = product.variant_id
+			order_meta_obj.product_quantity = product.product_quantity
+			order_meta_obj.save()
+
+
+
+	def save(self, *args, **kwargs):
+		cart_id = self.order_cart.cart_id
+		if not self.order_id:
+			self.order_id = "MishOrder"+cart_id
+		if not self.transaction_id:
+			self.transaction_id = "TransactioIV-"+cart_id
+		super(Orders, self).save(*args, **kwargs)
+
+
+class CartOrderBaseData(CommonBaseData):
+	customer_order = models.ForeignKey(Orders, related_name='user_orders_details')
+	product_id = models.CharField(max_length=100)
+	variant_id = models.CharField(max_length=100)
+	product_quantity = models.IntegerField(default=1)
+
+	class Meta:
+		db_table = "mishipay_order_data"
+		# abstract = True
+
 

@@ -2,5 +2,8 @@
 	"products":{
 		"products_list":"https://{STOREURL}/admin/products.json",
 		"product_details":"https://{STOREURL}/admin/products/{PRODUCT_ID}.json"
+	},
+	"orders":{
+		"create_order":"https://{STOREURL}/admin/orders.json"
 	}
 }

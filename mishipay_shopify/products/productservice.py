@@ -23,7 +23,7 @@ class ShopifyProductHandlerService:
 
 
 
-	def getShopifyUrl(self,param,product):
+	def getProductShopifyUrl(self,param,product):
 
 		with open(file_path,'r') as fobj:
 			data = json.load(fobj)
@@ -37,7 +37,7 @@ class ShopifyProductHandlerService:
 
 
 	def getProductsList(self,url_call,product=None):
-		req_url = self.getShopifyUrl(url_call,product)
+		req_url = self.getProductShopifyUrl(url_call,product)
 		data = requests.get(req_url,auth=HTTPBasicAuth(my_settings.SHOPIFY_API_KEY, my_settings.SHOPIFY_API_PASSWORD))
 
 		if data.status_code == 200:
