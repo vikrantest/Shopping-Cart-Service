@@ -1,5 +1,6 @@
 {
 	"products":{
-		"products_list":"https://{STOREURL}/admin/products.json"
+		"products_list":"https://{STOREURL}/admin/products.json",
+		"product_details":"https://{STOREURL}/admin/products/{PRODUCT_ID}.json"
 	}
 }

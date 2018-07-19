@@ -13,26 +13,33 @@ class ShopifyProductHandlerService:
 	def __init__(self):
 		self.URL_TOKEN = ["{APIKEY}","{PASSWORD}","{STOREURL}"]
 
-	def __call__(self,arg):
+	def __call__(self,arg,*args):
 		if arg == "products_list":
-			return self.getProductsList()
+			call_url = 'products_list'
+			return self.getProductsList(call_url,None)
+		elif arg == "product_details":
+			call_url = 'product_details'
+			return self.getProductsList(call_url,product = args[0])
 
-	def getShopifyUrl(self,param):
+
+
+	def getShopifyUrl(self,param,product):
 
 		with open(file_path,'r') as fobj:
 			data = json.load(fobj)
 		
 		url = data['products'][param]
 
-		return url.format(STOREURL=my_settings.STORE_URL)
+		if product:
+			return url.format(STOREURL=my_settings.STORE_URL,PRODUCT_ID=str(product))
+		else:
+			return url.format(STOREURL=my_settings.STORE_URL)
 
 
-	def getProductsList(self):
-		req_url = self.getShopifyUrl('products_list')
-		print(req_url)
-
+	def getProductsList(self,url_call,product=None):
+		req_url = self.getShopifyUrl(url_call,product)
 		data = requests.get(req_url,auth=HTTPBasicAuth(my_settings.SHOPIFY_API_KEY, my_settings.SHOPIFY_API_PASSWORD))
-		print(dir(data),data.status_code)
+
 		if data.status_code == 200:
 			return data.json()
 		else:
