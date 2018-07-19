@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MishiPay Shopping Cart</title>
+	<style type="text/css">
+
+	.product_image{
+		height: 120px;
+    	width: 100px;
+    }
+    .product_container{
+		display: inline-block;
+		width: 500px
+    }
+    .product_grid{
+    	padding: 15px;
+    }
+
+
+	</style>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<script type="text/javascript">
+
+		function removeFromCart(product_id) {
+
+			let request_obj = {"cart_product_id":parseInt(product_id)}
+
+			removeItemAjaxRequest(request_obj,product_id);
+		};
+
+		function removeItemAjaxRequest(payload,product_id){
+
+			let req_body = JSON.stringify(payload);
+
+			$.ajax({
+				url:"http://127.0.0.1:8000/api/v1/cart/removeproduct/",
+				method:"DELETE",
+				data: req_body,
+  				dataType:'json',
+  				contentType: "application/json",
+				processData: false,
+				headers: {"Authorization":"Token {{ loggedin_token }}"},
+				success: function(result){
+					cart_item_count = parseInt($("#cart_item_count").text());
+					$("#cart_item_count").text(cart_item_count-parseInt($("#quantity_"+product_id).val()));
+				},
+				error: function(error){
+					alert(error.responseJSON.detail);
+					if(error.status === 401){window.location = "http://127.0.0.1:8000/webapp/signin";}
+				}
+
+			})
+
+		}
+
+		function checkoutCartAjaxRequest(){
+
+
+			$.ajax({
+				url:"http://127.0.0.1:8000/api/v1/order-checkout/",
+				method:"POST",
+  				dataType:'json',
+  				contentType: "application/json",
+				processData: false,
+				headers: {"Authorization":"Token {{ loggedin_token }}"},
+				success: function(result){
+					$("#cart_item_count").text(0);
+				},
+				error: function(error){
+					alert(error.responseJSON.detail);
+					if(error.status === 401){window.location = "http://127.0.0.1:8000/webapp/signin";}
+				}
+
+			})
+
+		}
+
+
+		
+
+
+
+
+	</script>
+</head>
+<body>
+	<H3><a href="/webapp/cart/"> Cart </a>(<span id="cart_item_count">{{ cart.item_count }}</span>) / <a href="/webapp/products/"> Products  </a> / {% if loggedin_token %}<a href="/webapp/orders/">Orders</a> / <a href="/webapp/signout/">Logout</a>{% endif %}</H3>
+	<H1>Cart</H1>
+	<div>
+		{% if cart.products %}
+		<table class="product_container">
+			<tr>
+				<td>Product</td>
+				<td>Action</td>
+			</tr>
+			{% for m in cart.products %}
+			<tr id="product-{{m.id}}">
+				<td class="product_grid">
+					<h3>{{ m.product_title }} </h3>
+					<h4>{{ m.product_quantity }} </h4>
+					<h4>Rs - {{ m.product_price }} </h4>
+				</td>
+				<td>
+					<input type="hidden" name="item_id" value="{{ m.id }}">
+					<input type="hidden" name="quantity" id="quantity_{{ m.id }}" value="{{ m.quantity }}">
+					<button onclick="removeFromCart('{{m.id}}');">Remove From Cart</button>
+				</td>
+			</tr>
+		{% endfor %}
+		</table>
+		<div><button onclick="checkoutCartAjaxRequest('{{m.id}}');">CHECKOUT YOU CART</button></div>
+		{% elif not loggedin_token %}
+		Please <a href="/webapp/signin">Login</a> to see your cart
+		{% else %}
+
+		No Product in your cart
+		{% endif %}
+
+	</div>
+
+
+</body>
+</html>

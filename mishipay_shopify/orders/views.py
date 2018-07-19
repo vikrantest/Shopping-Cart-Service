@@ -6,6 +6,7 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from orders.serializers import OrderSerializers
 from orders.orderservice import ShopifyOrderHandlerService , ShopifyCartHandlerService
 
 @permission_classes((permissions.IsAuthenticated,))
@@ -16,7 +17,8 @@ class OrderView(APIView):
 
 	def get(self,request):
 		order_list = self.order_service_obj.getOrdersList(request.user)
-		return Response({},status=status.HTTP_200_OK)
+		order_data = OrderSerializers(order_list,many=True).data
+		return Response({"orders":order_data},status=status.HTTP_200_OK)
 
 
 
@@ -29,28 +31,27 @@ class CartView(APIView):
 		self.cart_service_obj = ShopifyCartHandlerService()
 
 	def get(self,request):
-		requst_data = request.data
+		request_data = request.data
 		cart = self.cart_service_obj.getOrCreatUserCart(request.user)
 		return Response({'cart':cart},status=status.HTTP_200_OK)
 
 	def put(self,request):
-		requst_data = request.data
-		cart,error = self.cart_service_obj.AddProductToCart(request.user,requst_data.get('product',{}))
+		request_data = request.data
+		message,error = self.cart_service_obj.AddProductToCart(request.user,request_data.get('product',{}))
 		if error:
-			status_code = status.HTTP_400_BAD_REQUEST
+			return Response({'error':message},status=status.HTTP_400_BAD_REQUEST)
 		else:
 			status_code = status.HTTP_200_OK
-		return Response({'message':cart},status=status.HTTP_200_OK)
+			return Response({'message':message},status=status.HTTP_200_OK)
 
 
 	def delete(self,request):
-		requst_data = request.data
-		cart , error = self.cart_service_obj.RemoveProductFromCart(request.user,requst_data.get('cart_product_id',{}))
+		request_data = request.data
+		message , error = self.cart_service_obj.RemoveProductFromCart(request.user,request_data.get('cart_product_id',{}))
 		if error:
-			status_code = status.HTTP_400_BAD_REQUEST
+			return Response({'error':message},status=status.status.HTTP_400_BAD_REQUEST)
 		else:
-			status_code = status.HTTP_200_OK
-		return Response({'message':cart},status=status_code)
+			return Response({'message':message},status=status.HTTP_200_OK)
 
 @permission_classes((permissions.IsAuthenticated,))
 class CartCheckoutView(APIView):

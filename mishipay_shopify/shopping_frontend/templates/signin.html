@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SignIn</title>
+</head>
+<body>
+
+	<div style="padding: 100px 500px 300px 500px;
+    text-align: center;">
+		<div>
+			<div style="padding-bottom: 20px;">Login</div>
+			<form action="/webapp/signin/" method="post"  style="padding-bottom: 100px;">
+				{% csrf_token %}
+				UserEmail - <input type="text" name="useremail" id="useremail" style="width: 150px;margin-top: 10px;"><br>
+				Password - <input type="password" name="password" id="password" style="width: 150px;margin-top: 10px;"><br>
+				{% if error %}{{ error }}{% endif %}
+				<button type="submit" style="margin-top: 20px;">SignIn</button>
+			</form>
+		</div>
+
+	</div>
+
+
+</body>
+</html>

@@ -14,5 +14,4 @@ class ProductListView(APIView):
 	def get(self,request):
 		product_servie_obj = ShopifyProductHandlerService()
 		product_list = product_servie_obj('products_list')
-		print(product_list)
 		return Response(product_list,status=status.HTTP_200_OK)

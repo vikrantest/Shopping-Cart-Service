@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MishiPay Shopping Test</title>
+	<style type="text/css">
+
+	.product_image{
+		height: 120px;
+    	width: 100px;
+    }
+    .product_container{
+		display: inline-block;
+		width: 500px
+    }
+    .product_grid{
+    	padding: 15px;
+    }
+
+
+	</style>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<script type="text/javascript">
+
+		function addToCart(product_id) {
+
+			const variant_id = $("#variant_id_"+product_id).val(),
+				quantity = $("#quantity_"+product_id).val();
+
+			let request_obj = {"product":{"variant_id":variant_id,"product_id":product_id,"quantity":quantity}}
+
+			addCartAjaxRequest(request_obj,product_id);
+		};
+
+		function addCartAjaxRequest(payload,product_id){
+
+			let req_body = JSON.stringify(payload);
+
+			$.ajax({
+				url:"http://127.0.0.1:8000/api/v1/cart/addproduct/",
+				method:"PUT",
+				data: req_body,
+  				dataType:'json',
+  				contentType: "application/json",
+				processData: false,
+				headers: {"Authorization":"Token {{ loggedin_token }}"},
+				success: function(result){
+					console.log(payload.quantity);
+					cart_item_count = parseInt($("#cart_item_count").text());
+					$("#cart_item_count").text(cart_item_count+parseInt($("#quantity_"+product_id).val()));
+				},
+				error: function(error){
+					alert(error.responseJSON.detail);
+					if(error.status === 401){window.location = "http://127.0.0.1:8000/webapp/signin";}
+				}
+
+			})
+
+		}
+
+
+		
+
+
+
+
+	</script>
+</head>
+<body>
+	<H3><a href="/webapp/cart/"> Cart </a>(<span id="cart_item_count">{{ cart_item_count }}</span>) / <a href="/webapp/products/"> Products  </a> / {% if loggedin_token %}<a href="/webapp/orders/">Orders</a> / <a href="/webapp/signout/">Logout</a>{% endif %}</H3>
+	<H1>Products</H1>
+	<H1>Products</H1>
+	<div>
+		<table class="product_container">
+			<tr>
+				<td>Product</td>
+				<td>Action</td>
+			</tr>
+			{% for m in products %}
+			<tr id="product-{{m.id}}">
+				<td class="product_grid">
+					<h3>{{ m.title }} </h3>
+					<img class="product_image" src="{{ m.image.src }}"><span>{% autoescape off %}{{ m.body_html }}{% endautoescape %}</span>
+				</td>
+				<td>
+					{% for n in m.variants %}
+						<input type="hidden" id="variant_id_{{ m.id }}" value="{{ n.id }}">
+						<h4>Rs - {{ n.price }}</h4>
+					{% endfor %}
+					<input type="hidden" name="product_id" value="{{ m.id }}">
+					<input type="text" name="quantity" id="quantity_{{ m.id }}" value=1>
+					<button onclick="addToCart('{{m.id}}');">Add To Cart</button>
+				</td>
+			</tr>
+		{% endfor %}
+		</table>
+
+	</div>
+
+
+</body>
+</html>

@@ -15,8 +15,7 @@ class ShopifyOrderHandlerService:
 
 
 	def getOrdersList(self,param):
-		print(Orders.objects.all())
-		return True
+		return Orders.objects.filter(order_cart__user_customer = param)
 
 	def getOrderShopifyUrl(self,param):
 
@@ -32,12 +31,10 @@ class ShopifyOrderHandlerService:
 		cart = ShopifyCartHandlerService().getOrCreatUserCart(user,False)
 		order = Orders(order_cart = cart,order_completion_time = DatetimeUtil.unixtime())
 		order.order_status = 'completed'
-		print(order)
 		if self.updateShopifyCart(cart):
-			print('++++++++++++++++++++')
 			order.save()
 			order.setOrderMetaData()
-			# cart.delete()
+			cart.status = 'inactive'
 			return True
 		return False
 
@@ -61,7 +58,6 @@ class ShopifyOrderHandlerService:
 		payload = self.getSopifyOrderPayload(cart)
 		headers = {'content-type': 'application/json'}
 		data = requests.post(req_url,data=json.dumps(payload), headers=headers,auth=HTTPBasicAuth(my_settings.SHOPIFY_API_KEY, my_settings.SHOPIFY_API_PASSWORD))
-		print(data.status_code)
 		if data.status_code == 201:
 			return True
 		else:
@@ -75,9 +71,9 @@ class ShopifyCartHandlerService:
 
 	def getOrCreatUserCart(self,user,serialized = True):
 		try:
-			cart , _ = Cart.objects.get_or_create(user_customer = user)
+			cart , _ = Cart.objects.get_or_create(user_customer = user,status = 'active')
 		except:
-			cart = Cart.objects.create(user_customer = user)
+			cart = Cart.objects.create(user_customer = user,status = 'active')
 		if serialized:
 			cart_obj = CartSerializers(cart).data
 			products = cart.getProducts()
@@ -93,14 +89,12 @@ class ShopifyCartHandlerService:
 
 	def AddProductToCart(self,user,product):
 		error_message = "Some error ocurrered while adding this product to cart."
-		if all([product.get('id',None) , product.get('variant_id',None)]) :
+		if all([product.get('product_id',None) , product.get('variant_id',None)]) :
 			productservice = ShopifyProductHandlerService()
-			res_data = productservice("product_details",product.get('id',None))
+			res_data = productservice("product_details",product.get('product_id',None))
 			if res_data.get('product',None):
 				product_data = res_data['product']
 				valid_variant = False
-				print(product_data)
-				print(product)
 				for data in product_data['variants']:
 					if int(data['id']) == int(product.get('variant_id')):
 						valid_variant = True
@@ -108,10 +102,11 @@ class ShopifyCartHandlerService:
 				if not valid_variant:
 					return "Invalid Variant id." , True
 
-				if product.get('quantity',0) > product_data['variants'][0].get('inventory_quantity',0):#expectd only one variant for a product
+				if int(product.get('quantity',0)) > int(product_data['variants'][0].get('inventory_quantity',0)):#expectd only one variant for a product
 					return "Only "+str(product_data.get('inventory_quantity',0))+" left in stock", True
 				cart = self.getOrCreatUserCart(user,False)
 				product['price'] = product_data['variants'][0]['price']
+				product['title'] = product_data['title']
 				cart.addProduct(product)
 
 				return "Product got successfully added in cart." , False

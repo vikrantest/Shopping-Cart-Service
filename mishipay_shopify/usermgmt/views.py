@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import  permission_classes
 from rest_framework import permissions
 from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
 from django.shortcuts import render
 from django.contrib.auth import authenticate
 from common.utils import DatetimeUtil
@@ -77,9 +78,6 @@ class ShopifySignout(APIView):
 	"""
 
 	def post(self,request):
-		print(request.data)
-		print(request,request.user)
-		print(type(request.user))
 		if self.delete_token(request.user):
 			return Response({'message':'Logged out successfully'},status=status.HTTP_200_OK)
 		else:
@@ -93,6 +91,20 @@ class ShopifySignout(APIView):
 		except:
 			return False
 
+
+class CustomAuthToken(ObtainAuthToken):
+
+	def post(self, request, *args, **kwargs):
+		serializer = self.serializer_class(data=request.data,
+										   context={'request': request})
+		serializer.is_valid(raise_exception=True)
+		user = serializer.validated_data['user']
+		token, created = UserToken.objects.get_or_create(user=user)
+		return Response({
+			'token': token.key,
+			'user_id': user.pk,
+			'email': user.useremail
+		})
 
 
 

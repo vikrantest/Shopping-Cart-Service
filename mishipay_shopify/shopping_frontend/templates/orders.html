@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MishiPay Shopping Orders</title>
+	<style type="text/css">
+
+	.product_image{
+		height: 120px;
+    	width: 100px;
+    }
+    .product_container{
+		display: inline-block;
+		width: 600px
+    }
+    .product_grid{
+    	padding: 15px;
+    }
+
+
+	</style>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	
+</head>
+<body>
+	<H3><a href="/webapp/cart/"> Cart </a>(<span id="cart_item_count">{{ cart.item_count }}</span>) / <a href="/webapp/products/"> Products  </a> / {% if loggedin_token %}<a href="/webapp/orders/">Orders</a> / <a href="/webapp/signout/">Logout</a>{% endif %}</H3>
+	<H1>Orders</H1>
+	<div>
+		{% if orders.orders %}
+		<table class="product_container">
+			<tr>
+				
+				<td>Order Id</td>
+				<td>Products</td>
+			</tr>
+			{% for items in orders.orders %}
+			<tr id="product-{{items.order_id}}">
+				<td class="product_grid">
+					<h3>{{ items.order_id }} / {{ items.payment_method }} </h3>
+				</td>
+				<td>
+					{% for prod in items.products %}
+					<div>Product Name - {{ prod.product_title }} | Price - Rs {{ prod.product_price }} | Quantity - {{ prod.product_quantity}}</div>
+					{% endfor %}
+				</td>
+			</tr>
+		{% endfor %}
+		</table>
+		{% elif not loggedin_token %}
+		Please <a href="/webapp/signin">Login</a> to see your orders
+		{% else %}
+		No Order in your account
+		{% endif %}
+
+	</div>
+
+
+</body>
+</html>

@@ -34,11 +34,14 @@ class Cart(CommonBaseData):
 			self.cart_id = str(DatetimeUtil.unixtime())+self.user_customer.display_name.replace(' ','_')
 		super(Cart, self).save(*args, **kwargs)
 
-	def getProducts(self):
-		return CartProducts.objects.filter(user_cart=self)
+	def getProducts(self,serialized=False):
+		if not serialized:
+			return CartProducts.objects.filter(user_cart=self)
+		else:
+			return CartProducts.objects.filter(user_cart=self).values('product_title','product_quantity','product_price')
 
 	def addProduct(self,product):
-		CartProducts.objects.create(user_cart=self,product_id=product['id'],product_quantity=product['quantity'],product_price=product['price'],variant_id=product['variant_id'])
+		CartProducts.objects.create(user_cart=self,product_id=product['product_id'],product_quantity=product['quantity'],product_price=product['price'],variant_id=product['variant_id'],product_title=product['title'])
 		self.cart_price+=(float(product['price'])*int(product['quantity']))
 		self.item_count+=int(product['quantity'])
 		self.save()
@@ -59,6 +62,7 @@ class Cart(CommonBaseData):
 class CartProducts(CommonBaseData):
 	user_cart = models.ForeignKey(Cart, related_name='cart_products')
 	product_id = models.CharField(max_length=100)
+	product_title = models.CharField(max_length=150)
 	variant_id = models.CharField(max_length=100)
 	product_quantity = models.IntegerField(default=1)
 	product_price = models.FloatField(default=0.00)
@@ -87,6 +91,9 @@ class Orders(CommonBaseData):
 			order_meta_obj.variant_id = product.variant_id
 			order_meta_obj.product_quantity = product.product_quantity
 			order_meta_obj.save()
+
+	def getProducts(self):
+		return self.order_cart.getProducts(True)
 
 
 

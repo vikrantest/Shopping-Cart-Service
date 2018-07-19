@@ -18,15 +18,16 @@ class WebUserEmailAuthBackend(ModelBackend):
 	def authenticate(self,request,username=None,password=None):
 		try:
 			from usermgmt.models import UserTable
-			print('============================')
 			try:webuser = UserTable.objects.get(useremail=username)
 			except:
 				return None
 			# webuser = UserTable(useremail='vsingh1918@gmail.com',display_name='Vikrant Singh')
-			# webuser.save()
+			
 			# webuser.set_password('test')
+			# webuser.save()
 			if webuser:
-				webuser.check_password(password)
+				if not webuser.check_password(password):
+					return None
 			else:
 				return None
 			return webuser
@@ -37,7 +38,6 @@ class WebUserEmailAuthBackend(ModelBackend):
 class CustomAuthToken(ObtainAuthToken):
 
 	def post(self, request, *args, **kwargs):
-		print(self.request.data,'+++++++++++++++++++')
 		serializer = self.serializer_class(data=request.data,
 										   context={'request': request})
 		serializer.is_valid(raise_exception=True)
