@@ -30,6 +30,10 @@ class Cart(CommonBaseData):
 		db_table = 'mishipay_shoppingcart'
 
 
+	def get_create_cart(self):
+		return True
+
+
 
 class CartProducts(CommonBaseData):
 	user_cart = models.ForeignKey(Cart, related_name='cart_products')

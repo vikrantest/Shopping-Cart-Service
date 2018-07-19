@@ -1,3 +1,5 @@
 {
-	"test":"erer"
+	"products":{
+		"products_list":"https://{STOREURL}/admin/products.json"
+	}
 }
