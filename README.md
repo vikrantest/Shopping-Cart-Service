@@ -73,8 +73,8 @@ TEST Login - "useremail":"vsingh1918@gmail.com",
 
 Frontend URLs
 
-/webapp/products/ - Product Listing on WEBAPP
-/webapp/orders/ - Order listing on WEBAPP
-/webapp/cart/ - Display Cart Page in WEBAPP
-/webapp/signin - Signin WEBAPP using token from API service
-/webapp/signout - Signout from WEBAPP
+/webapp/products/ - Product Listing on WEBAPP                                               
+/webapp/orders/ - Order listing on WEBAPP                                                             
+/webapp/cart/ - Display Cart Page in WEBAPP                                                         
+/webapp/signin - Signin WEBAPP using token from API service                                           
+/webapp/signout - Signout from WEBAPP                                                         
