@@ -35,6 +35,7 @@ class ShopifyOrderHandlerService:
 			order.save()
 			order.setOrderMetaData()
 			cart.status = 'inactive'
+			cart.save()
 			return True
 		return False
 

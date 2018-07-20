@@ -44,7 +44,15 @@
 				headers: {"Authorization":"Token {{ loggedin_token }}"},
 				success: function(result){
 					cart_item_count = parseInt($("#cart_item_count").text());
-					$("#cart_item_count").text(cart_item_count-parseInt($("#quantity_"+product_id).val()));
+					$("#product-"+product_id).hide();
+					let item_count = cart_item_count-parseInt($("#quantity_"+product_id).val());
+					if(item_count<1){
+						$("#cart_checkout").hide();
+					}
+					else if(item_count > 1){
+						$("#cart_checkout").show();
+					}
+					$("#cart_item_count").text(item_count);
 				},
 				error: function(error){
 					alert(error.responseJSON.detail);
@@ -57,6 +65,10 @@
 
 		function checkoutCartAjaxRequest(){
 
+			$("#cart_checkout").hide();
+			$("#cart_checkout_text").show();
+			$(".cart_items").hide();
+
 
 			$.ajax({
 				url:"http://127.0.0.1:8000/api/v1/order-checkout/",
@@ -67,9 +79,14 @@
 				headers: {"Authorization":"Token {{ loggedin_token }}"},
 				success: function(result){
 					$("#cart_item_count").text(0);
+					$("#cart_checkout_text").text(" Order Placed Successfully");
+					
 				},
 				error: function(error){
 					alert(error.responseJSON.detail);
+					$("#cart_checkout").show();
+					$("#cart_checkout_text").hide();
+					$(".cart_items").show();
 					if(error.status === 401){window.location = "http://127.0.0.1:8000/webapp/signin";}
 				}
 
@@ -105,12 +122,12 @@
 				<td>
 					<input type="hidden" name="item_id" value="{{ m.id }}">
 					<input type="hidden" name="quantity" id="quantity_{{ m.id }}" value="{{ m.product_quantity }}">
-					<button onclick="removeFromCart('{{m.id}}');">Remove From Cart</button>
+					<button class="cart_items" onclick="removeFromCart('{{m.id}}');">Remove From Cart</button>
 				</td>
 			</tr>
 		{% endfor %}
 		</table>
-		<div><button onclick="checkoutCartAjaxRequest('{{m.id}}');">CHECKOUT YOU CART</button></div>
+		<div><button id="cart_checkout" onclick="checkoutCartAjaxRequest('{{m.id}}');">CHECKOUT YOUR CART</button><div id="cart_checkout_text" style="display: none;">Placing Order....Please Wait</div> </div>
 		{% elif not loggedin_token %}
 		Please <a href="/webapp/signin">Login</a> to see your cart
 		{% else %}
