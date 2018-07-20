@@ -27,6 +27,8 @@
 
 			const variant_id = $("#variant_id_"+product_id).val(),
 				quantity = $("#quantity_"+product_id).val();
+			$("#cart_adding_"+product_id).show();
+			$(document).off('click');
 
 			let request_obj = {"product":{"variant_id":variant_id,"product_id":product_id,"quantity":quantity}}
 
@@ -46,12 +48,17 @@
 				processData: false,
 				headers: {"Authorization":"Token {{ loggedin_token }}"},
 				success: function(result){
-					console.log(payload.quantity);
+					$("#cart_adding_"+product_id).hide();
 					cart_item_count = parseInt($("#cart_item_count").text());
 					$("#cart_item_count").text(cart_item_count+parseInt($("#quantity_"+product_id).val()));
 				},
 				error: function(error){
-					alert(error.responseJSON.detail);
+					if(error.responseJSON.detail){
+						alert(error.responseJSON.detail);
+					}
+					else if(error.responseJSON.error){
+						alert(error.responseJSON.error);
+					}
 					if(error.status === 401){window.location = "http://127.0.0.1:8000/webapp/signin";}
 				}
 
@@ -91,6 +98,7 @@
 					<input type="hidden" name="product_id" value="{{ m.id }}">
 					<input type="text" name="quantity" id="quantity_{{ m.id }}" value=1>
 					<button onclick="addToCart('{{m.id}}');">Add To Cart</button>
+					<div id="cart_adding_{{m.id}}" style="display: none;">Adding To Cart ............</div>
 				</td>
 			</tr>
 		{% endfor %}

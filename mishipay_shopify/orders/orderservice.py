@@ -103,7 +103,7 @@ class ShopifyCartHandlerService:
 					return "Invalid Variant id." , True
 
 				if int(product.get('quantity',0)) > int(product_data['variants'][0].get('inventory_quantity',0)):#expectd only one variant for a product
-					return "Only "+str(product_data.get('inventory_quantity',0))+" left in stock", True
+					return "Only "+str(product_data['variants'][0].get('inventory_quantity',0))+" left in stock", True
 				cart = self.getOrCreatUserCart(user,False)
 				product['price'] = product_data['variants'][0]['price']
 				product['title'] = product_data['title']
