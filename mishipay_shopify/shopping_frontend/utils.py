@@ -8,15 +8,15 @@ class RequestUtility:
 	DOMAIN = 'http://127.0.0.1:8000'
 	URLS = {"login":"/api/v1/user/sign-in/","logout":"/api/v1/user/sign-out/","get_cart":"/api/v1/cart/","get_orders":"/api/v1/orders/"}
 
+	def __init__(self):
+
+		self.EVENT_API_HANDLER = {"login":self.loginAPI,"logout":self.logoutAPI,"get_cart":self.getCartAPI,"get_orders":self.getOrderAPI}
+
 	def __call__(self,event,data=None):
 		if event == 'login':
-			return self.loginAPI(data)
-		elif event == 'logout':
-			return self.logoutAPI()
-		elif event == "get_cart":
-			return self.getCartAPI()
-		elif event == "get_orders":
-			return self.getOrderAPI()
+			return self.EVENT_API_HANDLER[event](data)
+		else:
+			return self.EVENT_API_HANDLER[event]()
 
 	def makeAPICall(self,url,data,method,headers=None):
 		if method == "POST":
