@@ -28,7 +28,6 @@
 			const variant_id = $("#variant_id_"+product_id).val(),
 				quantity = $("#quantity_"+product_id).val();
 			$("#cart_adding_"+product_id).show();
-			$(document).off('click');
 
 			let request_obj = {"product":{"variant_id":variant_id,"product_id":product_id,"quantity":quantity}}
 
